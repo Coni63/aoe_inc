@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from .point import Point
+from game.geometry.point import Point
 
 
 class Entity(Point):

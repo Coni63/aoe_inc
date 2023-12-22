@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import math
 import random
 
-from .aoe import AOE
-from .aoe import Fire
-from .aoe import Ice
-from .aoe import Poison
-from .entity import Entity
+from game.entities.aoe import AOE
+from game.entities.aoe import Fire
+from game.entities.aoe import Flashbang
+from game.entities.aoe import Ice
+from game.entities.entity import Entity
 
 
 class Game:
@@ -18,13 +19,13 @@ class Game:
     def place(self, type: str, x: int, y: int):
         match type:
             case "fire":
-                self.AOE.append(Fire(x=x, y=y, damage=10, radius=30))
+                self.AOE.append(Fire(x=x, y=y, damage=10, radius=3000))
+            case "flashbang":
+                self.AOE.append(Flashbang(x=x, y=y, damage=0, radius=1, max_radius=5000, step_radius=1000))
             case "ice":
-                self.AOE.append(Ice(x=x, y=y, damage=5, radius=50))
-            case "poison":
-                self.AOE.append(Poison(x=x, y=y, damage=1, radius=100))
+                self.AOE.append(Ice(x=x, y=y, damage=0, radius=3000))
 
-    def tick(self, dt):
+    def tick(self, dt: int):
         for enemy in self.enemies[::-1]:
             dist = self.me.dist(enemy)
             travel_dist = enemy.speed * dt
@@ -41,5 +42,8 @@ class Game:
 
     def generate_random_enemy(self, n=1):
         for _ in range(n):
-            x = random.randint(-10000, 10000)
-            self.enemies.append(Entity(x=x, y=20000, hp=100, damage=1, radius=10, speed=10))
+            theta = random.random() * 2 * math.pi
+            radius = random.randint(10000, 20000)
+            x = int(radius * math.cos(theta))
+            y = int(radius * math.sin(theta))
+            self.enemies.append(Entity(x=x, y=y, hp=100, damage=1, radius=10, speed=10))
