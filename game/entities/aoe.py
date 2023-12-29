@@ -10,14 +10,14 @@ from game.utils.translator import scale_to_pixel
 class AOE(Point):
     radius: int
     damage: int
-    remaining: int = 300
+    remaining: int = 3000  # ms
     color: tuple[int, int, int] = (0, 0, 0)
 
     def contains(self, other):
         return self.sqdist(other) <= self.radius**2
 
-    def update(self):
-        self.remaining -= 1
+    def update(self, dt: int):
+        self.remaining -= dt
         return self.remaining <= 0
 
     def draw(self, surf):
@@ -39,13 +39,13 @@ class Ice(AOE):
 class Flashbang(AOE):
     radius: int = 1
     damage: int = 0
-    remaining: int = 5
+    remaining: int = 0
     color: tuple[int, int, int] = (255, 255, 255)
-    max_radius: int = 5000
-    step_radius: int = 1000
+    bang_speed: int = 50  # unit per ms
+    max_radius: int = 5000  # unit
 
-    def update(self):
-        self.radius += self.step_radius
+    def update(self, dt: int):
+        self.radius += self.bang_speed * dt
         return self.radius >= self.max_radius
 
     def draw(self, surf):

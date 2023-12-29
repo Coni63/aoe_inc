@@ -1,17 +1,22 @@
 from __future__ import annotations
 
+import math
+import random
+
 import pygame
 
 from game.game import Game
+from game.utils.translator import convert_coordinates_to_pixels
 from game.utils.translator import convert_pixel_to_coordinates
+from rendering.prefabs.sparks import Spark
 
 
 class GameRenderer:
     @staticmethod
     def run(game: Game):
-        game.generate_random_enemy(50)
+        sparks = []
+        game.generate_random_enemy(10)
 
-        # initializing imported module
         pygame.init()
         pygame.display.set_caption("AoE Inc.")
         clock = pygame.time.Clock()
@@ -25,21 +30,30 @@ class GameRenderer:
 
             dt = clock.tick(60)
 
-            game.tick(dt)
+            print(1000 / dt)
 
-            for aoe in game.AOE[::-1]:
-                is_over = aoe.update()
-                if is_over:
-                    game.AOE.remove(aoe)
-                    continue
+            hit = game.tick(dt)
+
+            for aoe in game.AOE:
                 aoe.draw(display)
 
-                # pygame.draw.circle(display, aoe.color, convert_coordinates_to_pixels(aoe), aoe.radius)
+            game.me.draw(display)
 
-            # pygame.draw.circle(display, (255, 0, 0), convert_coordinates_to_pixels(game.me), game.me.radius)
+            for enemy in game.enemies:
+                enemy.draw(display)
 
-            # for enemy in game.enemies:
-            #     pygame.draw.circle(display, (0, 0, 0), convert_coordinates_to_pixels(enemy), enemy.radius)
+            if hit and len(sparks) < 100:
+                x, y = convert_coordinates_to_pixels(game.me.x, game.me.y)
+                sparks += [
+                    Spark([x, y], random.random() * math.pi * 2, random.randint(3, 6), (255, 255, 255), 2)
+                    for _ in range(20)
+                ]
+
+            for i, spark in sorted(enumerate(sparks), reverse=True):
+                spark.move(1)
+                spark.draw(display)
+                if not spark.alive:
+                    sparks.pop(i)
 
             # Check for event if user has pushed
             # any event in queue
@@ -51,13 +65,10 @@ class GameRenderer:
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_1:
-                        print("fire")
                         aoe_type = "fire"
                     if event.key == pygame.K_2:
-                        print("ice")
                         aoe_type = "ice"
                     if event.key == pygame.K_3:
-                        print("flashbang")
                         aoe_type = "flashbang"
 
                 # if event is of type quit then set
